@@ -489,7 +489,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+
 // 导入时间模块
 import moment from 'moment';
 export default {
@@ -504,13 +504,13 @@ export default {
        
     },
     created() {
-        axios.get('http://111.230.232.110:8899/site/goods/gettopdata/goods').then(response=>{
+        this.$axios.get('http://111.230.232.110:8899/site/goods/gettopdata/goods').then(response=>{
             console.log(response);
             this.catelist = response.data.message.catelist;
             this.sliderlist = response.data.message.sliderlist
             this.toplist = response.data.message.toplist
         });
-        axios.get('http://111.230.232.110:8899/site/goods/getgoodsgroup').then(response=>{
+       this.$axios.get('http://111.230.232.110:8899/site/goods/getgoodsgroup').then(response=>{
             console.log(response);
             console.log('nihao');
             this.goodsdata = response.data.message;
