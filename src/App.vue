@@ -41,7 +41,7 @@
                 <div id="menu2" class="nav-box menuhd">
                     <ul>
                         <li class="index">
-                              <router-link to="./index">
+                              <router-link to="/index">
                                  <span class="out" style="top: 0px;">首页</span>
                               </router-link>
                         </li>

@@ -98,7 +98,7 @@
 
 <script>
 export default {
-
+    name:'cart',
 }
 </script>
 
