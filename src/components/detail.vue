@@ -14,9 +14,9 @@
           <div class="left-925">
             <div class="goods-box clearfix">
               <div class="pic-box">
-                <el-carousel >
+                <el-carousel>
                   <el-carousel-item v-for="(item,index) in imglist" :key="index">
-                      <img :src="item.original_path" alt="">
+                    <img :src="item.original_path" alt>
                   </el-carousel-item>
                 </el-carousel>
               </div>
@@ -90,6 +90,7 @@
                     <div class="conn-box">
                       <div class="editor">
                         <textarea
+                          v-model.trim="inputcommet"
                           id="txtContent"
                           name="txtContent"
                           sucmsg=" "
@@ -100,6 +101,7 @@
                       </div>
                       <div class="subcon">
                         <input
+                          @click="submitcontent"
                           id="btnSubmit"
                           name="submit"
                           type="submit"
@@ -112,39 +114,37 @@
                   </div>
                   <ul id="commentList" class="list-box">
                     <p
+                      v-show="!totalcomment"
                       style="margin: 5px 0px 15px 69px; line-height: 42px; text-align: center; border: 1px solid rgb(247, 247, 247);"
                     >暂无评论，快来抢沙发吧！</p>
-                    <li>
+                    <li v-for="item in commentlist">
                       <div class="avatar-box">
                         <i class="iconfont icon-user-full"></i>
                       </div>
                       <div class="inner-box">
                         <div class="info">
-                          <span>匿名用户</span>
-                          <span>2017/10/23 14:58:59</span>
+                          <span>{{item.user_name}}</span>
+                          <span>{{item.reply_time | globalFilters('YYYY年MM月DD日THH:mm:ss')}}</span>
                         </div>
-                        <p>testtesttest</p>
-                      </div>
-                    </li>
-                    <li>
-                      <div class="avatar-box">
-                        <i class="iconfont icon-user-full"></i>
-                      </div>
-                      <div class="inner-box">
-                        <div class="info">
-                          <span>匿名用户</span>
-                          <span>2017/10/23 14:59:36</span>
-                        </div>
-                        <p>很清晰调动单很清晰调动单</p>
+                        <p>{{item.content}}</p>
                       </div>
                     </li>
                   </ul>
                   <div class="page-box" style="margin: 5px 0px 0px 62px;">
-                    <div id="pagination" class="digg">
+                    <!-- <div id="pagination" class="digg">
                       <span class="disabled">« 上一页</span>
                       <span class="current">1</span>
                       <span class="disabled">下一页 »</span>
-                    </div>
+                    </div>-->
+                    <el-pagination
+                      @size-change="handleSizeChange"
+                      @current-change="handleCurrentChange"
+                      :current-page=" pageIndex"
+                      :page-sizes="[5, 10, 15, 20]"
+                      :page-size="100"
+                      layout="total, sizes, prev, pager, next, jumper"
+                      :total="totalcomment"
+                    ></el-pagination>
                   </div>
                 </div>
               </div>
@@ -185,53 +185,119 @@ export default {
       goodsinfo: {},
       indexshow: 1,
       hotgoodslist: [],
-      imglist:[],
+      imglist: [],
 
-      num1: 0
+      num1: 0,
+      //   输入的评论的内容
+      inputcommet: "",
+      //  评论当前是第几页
+      pageIndex: 1, //默认当前页是第一页
+      // 每页显示的条数
+      pageSize: 10,
+
+      // 数据的同条数
+      totalcomment: 0,
+      // 获取的评论的数据
+      commentlist: []
     };
   },
+
   methods: {
-    getDetaildata(){
-          axios
-      .get(
-        `http://111.230.232.110:8899/site/goods/getgoodsinfo/${
-          this.$route.params.id
-        }`
-      )
-      .then(res => {
-        console.log(res);
-        this.goodsinfo = res.data.message.goodsinfo;
-        this.hotgoodslist = res.data.message.hotgoodslist;
-        this.imglist = res.data.message.imglist;
-      });
+    getDetaildata() {
+      axios
+        .get(
+          `http://111.230.232.110:8899/site/goods/getgoodsinfo/${
+            this.$route.params.id
+          }`
+        )
+        .then(res => {
+          this.goodsinfo = res.data.message.goodsinfo;
+          this.hotgoodslist = res.data.message.hotgoodslist;
+          this.imglist = res.data.message.imglist;
+        });
+    },
+    getcomment() {
+      this.$axios
+        .get(
+          `site/comment/getbypage/goods/${this.$route.params.id}?pageIndex=${
+            this.pageIndex
+          }&pageSize=${this.pageSize}`
+        )
+        .then(res => {
+          this.commentlist = res.data.message;
+          this.totalcomment = res.data.totalcount;
+          // console.log('ha');
+          // console.log(res);
+        });
+    },
+    submitcontent() {
+      // 首先判断提交的内容是不是为空
+      if (this.inputcommet == "") {
+        this.$message.error("输入的内容不能够为空呀！");
+      } else {
+        this.$axios
+          .post(
+            `site/validate/comment/post/goods/${this.$route.params.id}`,
+            { commenttxt: this.inputcommet }
+          )
+          .then(res => {
+            
+            if(res.data.status == 0){
+               this.$message({ message: res.data.message, type: "success" });
+               this.inputcommet = "";
+               this.pageIndex = 1;
+                this. getcomment();
+            }else{
+               this.$message('评论发表失败！');
+            }
+           
+           
+          });
+      }
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`);
+    },
+    handleCurrentChange(val) {
+      this.pageIndex = val;
+     this.getcomment();
     }
   },
   created() {
-      this.getDetaildata();
+    this.getDetaildata();
+    this.getcomment();
   },
-  watch: {}
+  watch: {
+    $route: {
+      handler(value, valuea) {
+        this.getDetaildata();
+        this.getcomment();
+      },
+      deep: true
+    },
+  }
 };
 </script>
 
 <style>
-    .pic-box{
-        width:415px;
-        height: 319px;
-    }
-     .pic-box .el-carousel{
-         width: 100%;
-         height: 100%;
-     }
-     .pic-box .el-carousel .el-carousel__container{
-         height: 100%;
-         width: 100%;
-     }
-       .pic-box .el-carousel .el-carousel__container .el-carousel__item{
-           width: 100%;
-           height: 100%;
-       }
-     .pic-box .el-carousel .el-carousel__container .el-carousel__item img{
-         height: 100%;
-         width: 100%;
-     }
+.pic-box {
+  width: 415px;
+  height: 319px;
+}
+.pic-box .el-carousel {
+  width: 100%;
+  height: 100%;
+}
+.pic-box .el-carousel .el-carousel__container {
+  height: 100%;
+  width: 100%;
+}
+.pic-box .el-carousel .el-carousel__container .el-carousel__item {
+  width: 100%;
+  height: 100%;
+}
+.pic-box .el-carousel .el-carousel__container .el-carousel__item img {
+  height: 100%;
+  width: 100%;
+}
 </style>

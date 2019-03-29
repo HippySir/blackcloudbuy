@@ -18,7 +18,10 @@
                         <strong>|</strong>
                     </span>
                     <span>
-                        <a href="" class="">会员中心</a>
+                        <router-link to="/membercenter">
+                            会员中心
+                        </router-link>
+                        <!-- <a href="" class=""></a> -->
                         <strong>|</strong>
                         <a>退出</a>
                         <strong>|</strong>
@@ -125,6 +128,7 @@
 export default {
   name: 'app',
   
+
 }
 </script>
 
