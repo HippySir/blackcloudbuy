@@ -110,9 +110,9 @@
           <div class="left-705">
             <div class="banner-img">
               <div id="focus-box" class="focus-box">
-                <el-carousel height="150px">
-                  <el-carousel-item v-for="item in 4" :key="item">
-                        <img src="" alt="">
+                <el-carousel >
+                  <el-carousel-item v-for="(item, index) in sliderlist" :key="index">
+                        <img :src="item.img_url" class="imgheight" alt="">
                   </el-carousel-item>
                 </el-carousel>
                 <!-- <ul class="slides">
@@ -211,7 +211,8 @@ export default {
       catelist: [],
       sliderlist: [],
       toplist: [],
-      goodsdata: []
+      goodsdata: [],
+      sliderlist:[],
     };
   },
   created() {
@@ -219,6 +220,7 @@ export default {
       .get("http://111.230.232.110:8899/site/goods/gettopdata/goods")
       .then(response => {
         console.log(response);
+        this.sliderlist = response.data.message.sliderlist;
         this.catelist = response.data.message.catelist;
         this.sliderlist = response.data.message.sliderlist;
         this.toplist = response.data.message.toplist;
@@ -241,4 +243,10 @@ export default {
 </script>
 
 <style>
+    .imgheight{
+        height: 341px;
+    }
+   .left-705 #focus-box .el-carousel__container{
+        height: 341px;
+    }
 </style>
